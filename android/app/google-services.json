@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "690273865156",
+    "project_id": "aya-application",
+    "storage_bucket": "aya-application.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690273865156:android:2fa83ab76b411167936891",
+        "android_client_info": {
+          "package_name": "application.aya"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChGTxijpGME3fsGaasriKG8cA5BBYfJwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:690273865156:android:a962fa5671b5df3a936891",
+        "android_client_info": {
+          "package_name": "com.example.aya_mobile_app_real"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChGTxijpGME3fsGaasriKG8cA5BBYfJwA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
