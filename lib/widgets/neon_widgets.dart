@@ -1,22 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NeonField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
+  final String? hint;
   final bool obscureText;
   final TextInputType keyboardType;
   final String? Function(String?)? validator;
   final Widget? suffixIcon;
+  final List<TextInputFormatter>? inputFormatters;
 
   const NeonField({
     super.key,
     required this.controller,
     required this.label,
+    this.hint,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.validator,
     this.suffixIcon,
+    this.inputFormatters,
   });
 
   @override
@@ -25,32 +30,53 @@ class NeonField extends StatelessWidget {
       controller: controller,
       obscureText: obscureText,
       keyboardType: keyboardType,
-      style: GoogleFonts.inter(fontSize: 15, color: Colors.black87),
       validator: validator,
+      inputFormatters: inputFormatters,
+      style: GoogleFonts.inter(
+        fontSize: 15,
+        color: Colors.black87,
+      ),
       decoration: InputDecoration(
         labelText: label,
+        hintText: hint,
         labelStyle: GoogleFonts.inter(
           fontSize: 14,
           color: Colors.grey.shade500,
+        ),
+        hintStyle: GoogleFonts.inter(
+          fontSize: 14,
+          color: Colors.grey.shade400,
         ),
         filled: true,
         fillColor: const Color(0xFFF5FFF5),
         suffixIcon: suffixIcon,
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.grey.shade300, width: 1.5),
+          borderSide: BorderSide(
+            color: Colors.grey.shade300,
+            width: 1.5,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF39FF14), width: 2.5),
+          borderSide: const BorderSide(
+            color: Color(0xFF39FF14),
+            width: 2.5,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red.shade400, width: 1.5),
+          borderSide: BorderSide(
+            color: Colors.red.shade400,
+            width: 1.5,
+          ),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.red.shade400, width: 2),
+          borderSide: BorderSide(
+            color: Colors.red.shade400,
+            width: 2,
+          ),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
@@ -91,20 +117,20 @@ class NeonButton extends StatelessWidget {
         ),
         child: loading
             ? const SizedBox(
-                height: 22,
-                width: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  color: Colors.black54,
-                ),
-              )
+          height: 22,
+          width: 22,
+          child: CircularProgressIndicator(
+            strokeWidth: 2.5,
+            color: Colors.black54,
+          ),
+        )
             : Text(
-                label,
-                style: GoogleFonts.inter(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                ),
-              ),
+          label,
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
