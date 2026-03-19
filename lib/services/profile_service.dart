@@ -43,4 +43,10 @@ class ProfileService {
     final doc = await _db.collection('users').doc(_uid).get();
     return doc.data();
   }
+  Future<void> updateFields(Map<String, dynamic> fields) async {
+    await _db.collection('users').doc(_uid).update({
+      ...fields,
+      'updated_at': FieldValue.serverTimestamp(),
+    });
+  }
 }
