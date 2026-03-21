@@ -1,39 +1,64 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class SleepLog {
-  final String? id;
-  final DateTime date;        // the calendar date this sleep belongs to
-  final DateTime bedtime;     // when the user went to sleep
-  final DateTime wakeTime;    // when the user woke up
-  final int? qualityScore;    // optional 1–5 self-rated quality
+  final String?  id;
+  final DateTime bedtime;
+  final DateTime wakeTime;
+  final double   durationHours;
+  final int?     qualityScore;
 
   const SleepLog({
     this.id,
-    required this.date,
     required this.bedtime,
     required this.wakeTime,
+    required this.durationHours,
     this.qualityScore,
   });
 
-  // Computed from bedtime → wakeTime, expressed in hours
-  double get durationH {
-    final diff = wakeTime.difference(bedtime);
-    return diff.inMinutes / 60.0;
+  // Date
+  factory SleepLog.create({
+    required DateTime bedtime,
+    required DateTime wakeTime,
+    int? qualityScore,
+  }) {
+    final hours = wakeTime.difference(bedtime).inMinutes / 60.0;
+    return SleepLog(
+      bedtime:      bedtime,
+      wakeTime:     wakeTime,
+      durationHours: double.parse(hours.toStringAsFixed(2)),
+      qualityScore: qualityScore,
+    );
   }
 
+  // Write to Firestore
   Map<String, dynamic> toMap() => {
-    'date':      date.toIso8601String().substring(0, 10), // 'YYYY-MM-DD'
-    'bedtime':   bedtime.toIso8601String(),
-    'wake_time': wakeTime.toIso8601String(),
-    'duration_h': durationH,                              // stored for easy querying
+    'bedtime':        Timestamp.fromDate(bedtime),
+    'wake_time':      Timestamp.fromDate(wakeTime),
+    'duration_hours': durationHours,
     if (qualityScore != null) 'quality_score': qualityScore,
   };
 
+  // Read from Firestore
   factory SleepLog.fromMap(String id, Map<String, dynamic> map) {
+    final bed  = (map['bedtime']   as Timestamp).toDate();
+    final wake = (map['wake_time'] as Timestamp).toDate();
     return SleepLog(
       id:           id,
-      date:         DateTime.parse(map['date'] as String),
-      bedtime:      DateTime.parse(map['bedtime'] as String),
-      wakeTime:     DateTime.parse(map['wake_time'] as String),
+      bedtime:      bed,
+      wakeTime:     wake,
+      durationHours: (map['duration_hours'] as num).toDouble(),
       qualityScore: map['quality_score'] as int?,
     );
   }
+
+  String get formattedDate {
+    final d = bedtime;
+    return '${d.day.toString().padLeft(2, '0')}.'
+        '${d.month.toString().padLeft(2, '0')}.'
+        '${d.year}';
+  }
+
+  String _pad(int n) => n.toString().padLeft(2, '0');
+  String get formattedBedtime  => '${_pad(bedtime.hour)}:${_pad(bedtime.minute)}';
+  String get formattedWakeTime => '${_pad(wakeTime.hour)}:${_pad(wakeTime.minute)}';
 }
