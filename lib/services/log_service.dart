@@ -5,11 +5,13 @@ import '../models/nutrition_log.dart';
 import '../models/activity_log.dart';
 import '../models/sleep_log.dart';
 import 'sleep_service.dart';
+import 'activity_service.dart';
 
 class LogService {
   final _db    = FirebaseFirestore.instance;
   final _auth  = FirebaseAuth.instance;
-  final _sleep = SleepService(); // delegate for sleep calls
+  final _sleep = SleepService();
+  final _activity = ActivityService();
 
   String get _uid => _auth.currentUser!.uid;
   DocumentReference get _userDoc =>
@@ -52,24 +54,15 @@ class LogService {
 
   // ACTIVITY
 
-  Future<void> addActivityLog(ActivityLog log) async {
-    await _userDoc.collection('activity_logs').add(log.toMap());
-  }
+  Future<void> addActivityLog(ActivityLog log) =>
+      _activity.addActivityLog(log);
 
-  Future<List<ActivityLog>> getRecentActivityLogs({int limit = 7}) async {
-    final snap = await _userDoc
-        .collection('activity_logs')
-        .orderBy('timestamp', descending: true)
-        .limit(limit)
-        .get();
-    return snap.docs
-        .map((d) => ActivityLog.fromMap(d.id, d.data()))
-        .toList();
-  }
+  Future<List<ActivityLog>> getRecentActivityLogs({int limit = 7}) =>
+      _activity.getActivityLogs(limit: limit);
 
-  Future<void> deleteActivityLog(String logId) async {
-    await _userDoc.collection('activity_logs').doc(logId).delete();
-  }
+  Future<void> deleteActivityLog(String logId) =>
+      _activity.deleteActivityLog(logId);
+
 
   // SLEEP
 
