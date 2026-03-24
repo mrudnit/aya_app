@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'nutrition_log_screen.dart';
 import 'activity_log_screen.dart';
 import 'sleep_log_screen.dart';
+import 'weight_log_screen.dart';
 
 class LogScreen extends StatefulWidget {
   const LogScreen({super.key});
@@ -19,7 +20,7 @@ class _LogScreenState extends State<LogScreen>
   @override
   void initState() {
     super.initState();
-    _tabs = TabController(length: 3, vsync: this);
+    _tabs = TabController(length: 4, vsync: this);
   }
 
   @override
@@ -48,6 +49,7 @@ class _LogScreenState extends State<LogScreen>
               Tab(text: 'Nutrition'),
               Tab(text: 'Activity'),
               Tab(text: 'Sleep'),
+              Tab(text: 'Weight'),
             ],
           ),
         ),
@@ -60,6 +62,7 @@ class _LogScreenState extends State<LogScreen>
               NutritionLogScreen(),
               ActivityLogScreen(),
               SleepLogScreen(),
+              WeightLogScreen(),
             ],
           ),
         ),
