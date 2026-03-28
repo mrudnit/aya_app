@@ -3,7 +3,6 @@ import 'package:google_fonts/google_fonts.dart';
 
 import 'home/home_screen.dart';
 import 'log/log_screen.dart';
-import 'analytics/analytics_screen.dart';
 import 'settings/settings_screen.dart';
 import 'shell_tab_notifier.dart';
 
@@ -66,7 +65,6 @@ class _MainShellState extends State<MainShell> {
         children: const [
           HomeScreen(),
           LogScreen(),
-          AnalyticsScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
