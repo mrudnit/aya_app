@@ -32,8 +32,8 @@ from app.services.relationship_service import (
     analyse_weight_regression,
 )
 
+from app.services.recommendation_engine import generate_recommendations
 router = APIRouter()
-
 
 @router.get("/overview/{uid}")
 def overview(
@@ -55,7 +55,7 @@ def overview(
 
     # 3. Personalised calorie target
     cal_target = calculate_calorie_target(profile)
-    target_kcal = cal_target.get("target_kcal")   # None if profile incomplete
+    target_kcal = cal_target.get("target_kcal")
 
     # 4. Run all
     target_sleep = float(profile.get("target_sleep_hours") or 8.0)
@@ -69,7 +69,7 @@ def overview(
     # Weight regression
     if weight_result.get("status") == "ok" and weight_result.get("regression_available"):
         regression = analyse_weight_regression(weight_df)
-        weight_result["regression"] = regression   # adds slope_kg_per_week, r², p
+        weight_result["regression"] = regression
     else:
         weight_result["regression"] = None
 
@@ -78,6 +78,26 @@ def overview(
     sleep_vs_calories  = analyse_sleep_vs_calories(daily_df)
     activity_vs_weight = analyse_activity_vs_weight(daily_df)
     late_meal_quality  = analyse_late_meal_vs_sleep_quality(daily_df)
+
+    # Correlations
+    correlations = {
+        "sleep_vs_activity":  sleep_vs_activity,
+        "sleep_vs_calories":  sleep_vs_calories,
+        "activity_vs_weight": activity_vs_weight,
+    }
+
+    # Recommendations
+    recommendations = generate_recommendations(
+        sleep=sleep_result,
+        nutrition=nutrition_result,
+        activity=activity_result,
+        weight=weight_result,
+        target_sleep=target_sleep,
+        target_kcal=target_kcal,
+        user_goal=user_goal,
+        correlations=correlations,
+        late_meal_analysis=late_meal_quality,
+    )
 
     # 5. Assemble response
     return {
@@ -93,11 +113,7 @@ def overview(
         "nutrition":       nutrition_result,
         "activity":        activity_result,
         "weight":          weight_result,
-        "correlations": {
-            "sleep_vs_activity":  sleep_vs_activity,
-            "sleep_vs_calories":  sleep_vs_calories,
-            "activity_vs_weight": activity_vs_weight,
-        },
+        "correlations":    correlations,
         "late_meal_analysis": late_meal_quality,
-        "recommendations": None,
+        "recommendations":    recommendations,
     }
