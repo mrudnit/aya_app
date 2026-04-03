@@ -1,117 +1,163 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../widgets/onboarding_widgets.dart';
 
-class AnalyticsScreen extends StatelessWidget {
+import '../../services/analytics_api_service.dart';
+import 'analytics_summary_section.dart';
+import 'analytics_chart_section.dart';
+import 'analytics_insights_section.dart';
+
+const _kNeon = Color(0xFF39FF14);
+
+class AnalyticsScreen extends StatefulWidget {
   const AnalyticsScreen({super.key});
 
   @override
+  State<AnalyticsScreen> createState() => _AnalyticsScreenState();
+}
+
+class _AnalyticsScreenState extends State<AnalyticsScreen> {
+  final _api = AnalyticsApiService();
+
+  bool _loading = true;
+  String? _error;
+  Map<String, dynamic>? _data;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() { _loading = true; _error = null; });
+    try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
+      if (uid == null) throw Exception('Not logged in');
+      final data = await _api.fetchOverview(uid);
+      setState(() { _data = data; _loading = false; });
+    } catch (e) {
+      setState(() { _error = e.toString(); _loading = false; });
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    if (_loading) {
+      return const Center(
+        child: CircularProgressIndicator(color: _kNeon),
+      );
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.wifi_off_outlined, size: 48, color: Colors.grey),
+              const SizedBox(height: 16),
+              Text('Could not load analytics',
+                  style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700, fontSize: 16)),
+              const SizedBox(height: 8),
+              Text(_error!,
+                  style: GoogleFonts.inter(
+                      fontSize: 12, color: Colors.grey.shade600),
+                  textAlign: TextAlign.center),
+              const SizedBox(height: 20),
+              ElevatedButton.icon(
+                onPressed: _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('Retry'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _kNeon,
+                  foregroundColor: Colors.black,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final d               = _data!;
+    final sleep           = d['sleep']              as Map<String, dynamic>? ?? {};
+    final nutrition       = d['nutrition']          as Map<String, dynamic>? ?? {};
+    final activity        = d['activity']           as Map<String, dynamic>? ?? {};
+    final weight          = d['weight']             as Map<String, dynamic>? ?? {};
+    final correlations    = d['correlations']       as Map<String, dynamic>? ?? {};
+    final lateMeal        = d['late_meal_analysis'] as Map<String, dynamic>? ?? {};
+    final recommendations = (d['recommendations']   as List<dynamic>? ?? [])
+        .cast<Map<String, dynamic>>();
+
+    return RefreshIndicator(
+      color: _kNeon,
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
         children: [
+          // Header
           Text('Analytics',
               style: GoogleFonts.inter(
-                  fontSize: 22, fontWeight: FontWeight.w800)),
+                  fontSize: 26, fontWeight: FontWeight.w800, color: _kNeon)),
           const SizedBox(height: 4),
-          Text('Insights about your habits over time.',
+          Text('Your weekly trends and key findings',
               style: GoogleFonts.inter(
                   fontSize: 13, color: Colors.grey.shade500)),
-          const SizedBox(height: 28),
+          const SizedBox(height: 20),
 
-          _StubCard(
-            emoji: '🌙',
-            title: 'Sleep trends',
-            description:
-            'Average sleep per night vs your target.\n'
-                'Line chart — available in Phase 4.',
+          // Weekly summary cards
+          _SectionLabel('Weekly Summary'),
+          const SizedBox(height: 10),
+          AnalyticsSummarySection(
+            sleep: sleep,
+            nutrition: nutrition,
+            activity: activity,
+            weight: weight,
           ),
-          const SizedBox(height: 16),
-          _StubCard(
-            emoji: '🍽️',
-            title: 'Nutrition overview',
-            description:
-            'Daily calorie and macro averages.\n'
-                'Bar chart — available in Phase 4.',
+          const SizedBox(height: 24),
+
+          // Charts
+          _SectionLabel('Trends'),
+          const SizedBox(height: 10),
+          AnalyticsChartsSection(
+            sleep: sleep,
+            nutrition: nutrition,
+            activity: activity,
+            weight: weight,
           ),
-          const SizedBox(height: 16),
-          _StubCard(
-            emoji: '🏃',
-            title: 'Activity summary',
-            description:
-            'Active minutes per week vs WHO recommendation (150 min).\n'
-                'Available in Phase 4.',
+          const SizedBox(height: 24),
+
+          _SectionLabel('Key Findings'),
+          const SizedBox(height: 10),
+          AnalyticsInsightsSection(
+            correlations: correlations,
+            lateMeal: lateMeal,
+            recommendations: recommendations,
           ),
-          const SizedBox(height: 16),
-          _StubCard(
-            emoji: '📊',
-            title: 'Correlation analysis',
-            description:
-            'Sleep vs energy, activity vs mood, and more.\n'
-                'Requires FastAPI + Python backend — Phase 5.',
-          ),
+
+          const SizedBox(height: 32),
         ],
       ),
     );
   }
 }
 
-class _StubCard extends StatelessWidget {
-  final String emoji, title, description;
-  const _StubCard({
-    required this.emoji,
-    required this.title,
-    required this.description,
-  });
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: dark ? const Color(0xFF1E1E1E) : Colors.white,
-        border: Border.all(
-            color: dark ? Colors.grey.shade700 : Colors.grey.shade200,
-            width: 1.5),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(emoji, style: const TextStyle(fontSize: 30)),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(title,
-                    style: GoogleFonts.inter(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
-                const SizedBox(height: 4),
-                Text(description,
-                    style: GoogleFonts.inter(
-                        fontSize: 13, color: Colors.grey.shade500)),
-              ],
-            ),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(
-                horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: kNeon.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Text('Planned',
-                style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: kNeon)),
-          ),
-        ],
+    return Text(
+      text,
+      style: GoogleFonts.inter(
+        fontSize: 13,
+        fontWeight: FontWeight.w700,
+        color: Colors.grey.shade500,
+        letterSpacing: 0.8,
       ),
     );
   }
