@@ -122,7 +122,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
         ],
       ),
     );
-    if (confirmed == true) await AuthService().logout();
+    if (confirmed == true) {
+      await AuthService().logout();
+      if (mounted) Navigator.of(context).popUntil((route) => route.isFirst);
+    }
   }
 
   void _showSnack(String msg) {

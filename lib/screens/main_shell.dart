@@ -4,7 +4,11 @@ import 'package:google_fonts/google_fonts.dart';
 import 'home/home_screen.dart';
 import 'log/log_screen.dart';
 import 'settings/settings_screen.dart';
+import 'analytics/analytics_screen.dart';
 import 'shell_tab_notifier.dart';
+
+
+const _kNeon = Color(0xFF39FF14);
 
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -43,18 +47,17 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
-    final dark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: Text('Aya',
             style: GoogleFonts.inter(
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF39FF14),
+                color: _kNeon,
                 fontSize: 22)),
         actions: [
           IconButton(
             icon: const Icon(Icons.settings_outlined,
-                color: Color(0xFF39FF14)),
+                color: _kNeon),
             tooltip: 'Settings',
             onPressed: _openSettings,
           ),
@@ -65,12 +68,13 @@ class _MainShellState extends State<MainShell> {
         children: const [
           HomeScreen(),
           LogScreen(),
+          AnalyticsScreen(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _currentIndex,
         onTap: (i) => setState(() => _currentIndex = i),
-        selectedItemColor:   const Color(0xFF39FF14),
+        selectedItemColor:   _kNeon,
         unselectedItemColor: Colors.grey.shade400,
         elevation: 8,
         selectedLabelStyle:   GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.w700),

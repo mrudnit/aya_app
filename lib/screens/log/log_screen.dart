@@ -31,17 +31,19 @@ class _LogScreenState extends State<LogScreen>
 
   @override
   Widget build(BuildContext context) {
+    final tabBarBg = Theme.of(context).scaffoldBackgroundColor;
     return Column(
       children: [
         // Tab bar
-        Container(
-          color: Colors.white,
+        ColoredBox(
+          color: tabBarBg,
           child: TabBar(
             controller: _tabs,
-            labelColor: const Color(0xFF39FF14),
-            unselectedLabelColor: Colors.grey.shade400,
-            indicatorColor: const Color(0xFF39FF14),
-            indicatorWeight: 2.5,
+            labelColor:            Color(0xFF39FF14),
+            unselectedLabelColor:  Colors.grey.shade500,
+            indicatorColor:        Color(0xFF39FF14),
+            indicatorWeight:       2.5,
+            dividerColor:          Colors.transparent,
             labelStyle: GoogleFonts.inter(
                 fontWeight: FontWeight.w700, fontSize: 13),
             unselectedLabelStyle: GoogleFonts.inter(fontSize: 13),
