@@ -18,12 +18,9 @@ MIN_PAIRED_CORRELATION = 10
 
 MIN_TTEST_PER_GROUP = 3
 
-
 # Shared helpers
-
 def _paired(daily_df: pd.DataFrame, col_a: str, col_b: str) -> pd.DataFrame:
     return daily_df[[col_a, col_b]].dropna().copy()
-
 
 def _safe_round(val, n: int = 3) -> float | None:
     try:
@@ -32,7 +29,6 @@ def _safe_round(val, n: int = 3) -> float | None:
         return round(float(val), n)
     except (TypeError, ValueError):
         return None
-
 
 def _pearson(x: pd.Series, y: pd.Series) -> dict:
     r, p = stats.pearsonr(x, y)
@@ -59,7 +55,6 @@ def _pearson(x: pd.Series, y: pd.Series) -> dict:
         "interpretation":  interp,
     }
 
-
 def _spearman(x: pd.Series, y: pd.Series) -> dict:
     r, p = stats.spearmanr(x, y)
     r, p = float(r), float(p)
@@ -85,7 +80,6 @@ def _spearman(x: pd.Series, y: pd.Series) -> dict:
         "interpretation": interp,
     }
 
-
 def _welch_ttest(
         group_low: pd.Series,
         group_normal: pd.Series,
@@ -110,9 +104,7 @@ def _welch_ttest(
         "n_normal_sleep":      int(len(g_normal)),
     }
 
-
 # 1. Sleep vs Activity
-
 def analyse_sleep_vs_activity(daily_df: pd.DataFrame) -> dict:
     paired = _paired(daily_df, "duration_hours", "duration_min")
     n      = len(paired)
@@ -182,9 +174,7 @@ def analyse_sleep_vs_activity(daily_df: pd.DataFrame) -> dict:
         "t_test":              t_test,
     }
 
-
 # 2. Sleep vs Calories
-
 def analyse_sleep_vs_calories(daily_df: pd.DataFrame) -> dict:
     paired = _paired(daily_df, "duration_hours", "total_kcal")
     n      = len(paired)
@@ -250,9 +240,7 @@ def analyse_sleep_vs_calories(daily_df: pd.DataFrame) -> dict:
         "t_test":                t_test,
     }
 
-
 # 3. Activity vs Weight
-
 def analyse_activity_vs_weight(daily_df: pd.DataFrame) -> dict:
     paired = _paired(daily_df, "duration_min", "weight_kg")
     n      = len(paired)
@@ -287,9 +275,7 @@ def analyse_activity_vs_weight(daily_df: pd.DataFrame) -> dict:
         ),
     }
 
-
 # 4. Late Meal vs Sleep Quality
-
 def analyse_late_meal_vs_sleep_quality(daily_df: pd.DataFrame) -> dict:
     # Paired days
     paired = daily_df[["has_late_meal", "quality_score"]].dropna().copy()
@@ -389,9 +375,7 @@ def analyse_late_meal_vs_sleep_quality(daily_df: pd.DataFrame) -> dict:
         "t_test":                    t_test,
     }
 
-
 # Weight regression
-
 def analyse_weight_regression(weight_df: pd.DataFrame) -> dict | None:
     df = weight_df.dropna(subset=["weight_kg"]).copy()
     if len(df) < 4:

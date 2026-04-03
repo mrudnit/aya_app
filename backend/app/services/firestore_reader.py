@@ -1,26 +1,3 @@
-# =============================================================================
-# app/services/firestore_reader.py  —  Firestore → raw Python dicts
-# =============================================================================
-# Reads raw documents from Firestore and converts them to Python dicts.
-# Field names match the Flutter models EXACTLY as defined in the
-# analytics design document.
-#
-# Firestore field names used here:
-#
-#   users/{uid}:
-#     firstName, gender, age, height_cm, weight_kg,
-#     activity_level, goal, target_sleep_hours
-#
-#   sleep_logs:
-#     bedtime (Timestamp), wake_time (Timestamp),
-#     duration_hours (float), quality_score (int, optional)
-#
-#   nutrition_logs (MealLog):
-#     meal_type (str), date (str), created_at (Timestamp),
-#     total_kcal (float), total_protein (float),
-#     total_carbs (float), total_fat (float),
-#     items (list — not used in analytics, only totals matter)
-#
 from app.core.firebase import get_db
 
 

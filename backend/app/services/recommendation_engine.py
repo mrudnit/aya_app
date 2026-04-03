@@ -439,7 +439,6 @@ def _deduplicate_by_category(recs: list[dict]) -> list[dict]:
     final.extend(seen_categories.values())
     return final
 
-
 # Main entry point
 
 def generate_recommendations(

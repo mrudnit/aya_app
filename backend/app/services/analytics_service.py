@@ -267,6 +267,6 @@ def analyse_weight(weight_df: pd.DataFrame, user_goal: str) -> dict:
         "trend":                trend,
         "user_goal":            user_goal,
         "goal_aligned":         aligned,
-        "regression_available": regression_available,  # Phase 3 will add slope + r²
+        "regression_available": regression_available,
         "chart_data":           chart_data,
     }

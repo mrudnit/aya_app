@@ -4,7 +4,6 @@ from typing import Optional
 
 
 # Individual DataFrames
-
 def make_sleep_df(raw: list[dict]) -> pd.DataFrame:
     if not raw:
         return pd.DataFrame(columns=[
@@ -22,7 +21,6 @@ def make_sleep_df(raw: list[dict]) -> pd.DataFrame:
     df["quality_score"] = pd.to_numeric(df["quality_score"], errors="coerce")
 
     return df[["date_only", "bedtime", "wake_time", "duration_hours", "quality_score"]]
-
 
 def make_nutrition_df(raw: list[dict]) -> pd.DataFrame:
     if not raw:
@@ -46,7 +44,6 @@ def make_nutrition_df(raw: list[dict]) -> pd.DataFrame:
         "is_late_meal",
     ]]
 
-
 def make_activity_df(raw: list[dict]) -> pd.DataFrame:
     if not raw:
         return pd.DataFrame(columns=[
@@ -60,7 +57,6 @@ def make_activity_df(raw: list[dict]) -> pd.DataFrame:
 
     return df[["date_only", "created_at", "category", "duration_min"]]
 
-
 def make_weight_df(raw: list[dict]) -> pd.DataFrame:
     if not raw:
         return pd.DataFrame(columns=["date_only", "created_at", "weight_kg"])
@@ -72,9 +68,7 @@ def make_weight_df(raw: list[dict]) -> pd.DataFrame:
 
     return df[["date_only", "created_at", "weight_kg"]]
 
-
 # Daily merged summary
-
 def build_daily_df(
         sleep_df:     pd.DataFrame,
         nutrition_df: pd.DataFrame,
@@ -151,9 +145,7 @@ def build_daily_df(
 
     return daily
 
-
 # Calorie target calculation
-
 def calculate_calorie_target(profile: dict) -> dict:
     age       = profile.get("age")
     height_cm = profile.get("height_cm")
@@ -179,7 +171,7 @@ def calculate_calorie_target(profile: dict) -> dict:
     elif gender == "female":
         bmr = base - 161
     else:
-        bmr = base - 78   # (5 + (-161)) / 2 = -78
+        bmr = base - 78
 
     # Step 2 - TDEE
     multipliers = {"low": 1.375, "medium": 1.55, "high": 1.725}
@@ -207,9 +199,7 @@ def calculate_calorie_target(profile: dict) -> dict:
         "goal_adjustment":    adjustment,
     }
 
-
 # Convenience wrapper
-
 def preprocess_all(
         raw_sleep:     list[dict],
         raw_nutrition: list[dict],
