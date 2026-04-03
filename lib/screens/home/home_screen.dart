@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../../models/sleep_log.dart';
 import '../../models/nutrition_log.dart';
@@ -16,6 +17,7 @@ import '../../widgets/home/home_today.dart';
 import '../../widgets/home/home_week.dart';
 import '../../widgets/home/home_quick_add.dart';
 import '../shell_tab_notifier.dart';
+import '../../services/analytics_api_service.dart';
 import '../log/sleep_form.dart';
 import '../log/nutrition_form.dart';
 import '../log/activity_form.dart';
@@ -33,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final _nutritionSvc = NutritionService();
   final _activitySvc  = ActivityService();
   final _weightSvc    = WeightService();
+  final _api          = AnalyticsApiService();
 
   bool                  _loading = true;
   Map<String, dynamic>? _profile;
@@ -45,6 +48,9 @@ class _HomeScreenState extends State<HomeScreen> {
   double                _weekAvgCalories  = 0;
   int                   _weekSleepDays    = 0;
 
+
+  Map<String, dynamic>? _mainRec;
+
   @override
   void initState() {
     super.initState();
@@ -54,12 +60,17 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _load() async {
     setState(() => _loading = true);
     try {
+      final uid = FirebaseAuth.instance.currentUser?.uid;
       final results = await Future.wait([
         _profileSvc.getProfile(),
         _sleepSvc.getSleepLogs(limit: 14),
         _nutritionSvc.getRecentNutritionLogs(limit: 30),
         _activitySvc.getActivityLogs(limit: 14),
         _weightSvc.getWeightLogs(limit: 1),
+        if (uid != null)
+          _api.fetchHome(uid).catchError((_) => <String, dynamic>{})
+        else
+          Future.value(<String, dynamic>{}),
       ]);
 
       final profile    = results[0] as Map<String, dynamic>?;
@@ -67,6 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final mealLogs   = results[2] as List<MealLog>;
       final actLogs    = results[3] as List<ActivityLog>;
       final weightLogs = results[4] as List<WeightLog>;
+      final backendData  = results[5] as Map<String, dynamic>;
 
       final now   = DateTime.now();
       final today = DateTime(now.year, now.month, now.day);
@@ -129,30 +141,56 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Returns the single most important insight
+  // ── Insight card logic ─────────────────────────────────────────────────────
+  // Priority order:
+  //   1. Backend main_recommendation — real statistical insight
+  //   2. Local logging reminders — "you haven't logged X today"
+  //   3. Positive fallback — "You're on track"
   ({String emoji, String title, String body, String severity}) _insight() {
+
+    // 1. Backend recommendation takes priority when available
+    //    Skip "good" severity from backend — those are positive and
+    //    can be replaced with the local fallback which reads better
+    if (_mainRec != null) {
+      final sev     = _mainRec!['severity']  as String? ?? 'info';
+      final title   = _mainRec!['title']     as String? ?? '';
+      final summary = _mainRec!['summary']   as String? ?? '';
+      final cat     = _mainRec!['category']  as String? ?? '';
+
+      // Only show backend rec if it's actionable (not just "all good")
+      if (sev != 'good' && title.isNotEmpty) {
+        return (
+        emoji:    _categoryEmoji(cat),
+        title:    title,
+        body:     summary,
+        severity: sev,
+        );
+      }
+    }
+
+    // 2. Local logging reminders — show the most important missing log
     if (_sleepToday == null) {
       return (
-      emoji: '🌙',
-      title: 'Log your sleep',
-      body:  'You haven\'t logged last night\'s sleep yet. '
+      emoji:    '🌙',
+      title:    'Log your sleep',
+      body:     'You haven\'t logged last night\'s sleep yet. '
           'Tap "Sleep" below to add it.',
       severity: 'warning',
       );
     }
     if (_caloriesToday == 0) {
       return (
-      emoji: '🍽️',
-      title: 'Log your first meal today',
-      body:  'Start tracking what you eat to stay on top of your nutrition.',
+      emoji:    '🍽️',
+      title:    'Log your first meal today',
+      body:     'Start tracking what you eat to stay on top of your nutrition.',
       severity: 'info',
       );
     }
     if (_activityMinToday == 0) {
       return (
-      emoji: '🏃',
-      title: 'No activity logged today',
-      body:  'Even a short walk counts. Tap "Activity" below to log it.',
+      emoji:    '🏃',
+      title:    'No activity logged today',
+      body:     'Even a short walk counts. Tap "Activity" below to log it.',
       severity: 'info',
       );
     }
@@ -161,21 +199,48 @@ class _HomeScreenState extends State<HomeScreen> {
         : DateTime.now().difference(_latestWeight!.createdAt).inDays;
     if (daysSinceWeight > 6) {
       return (
-      emoji: '⚖️',
-      title: 'Time to log your weight',
-      body:  'You haven\'t logged your weight in $daysSinceWeight days. '
+      emoji:    '⚖️',
+      title:    'Time to log your weight',
+      body:     'You haven\'t logged your weight in $daysSinceWeight days. '
           'Weekly measurements give the best trend data.',
       severity: 'info',
       );
     }
-    final sleepH = _sleepToday!.durationHours.toStringAsFixed(1);
+
+    // 3. Everything logged + backend either said "good" or was unreachable
+    //    Show backend good message if available, else standard fallback
+    if (_mainRec != null) {
+      final title   = _mainRec!['title']   as String? ?? '';
+      final summary = _mainRec!['summary'] as String? ?? '';
+      if (title.isNotEmpty) {
+        return (
+        emoji:    '✅',
+        title:    title,
+        body:     summary,
+        severity: 'good',
+        );
+      }
+    }
+
     return (
-    emoji: '✅',
-    title: 'All logged for today!',
-    body:  'Sleep: ${sleepH}h  ·  ${_caloriesToday.round()} kcal  ·  '
-        '${_activityMinToday} min active. Keep it up!',
+    emoji:    '✅',
+    title:    'You\'re on track',
+    body:     'Keep logging your data to maintain progress '
+        'and unlock personalised insights.',
     severity: 'good',
     );
+  }
+
+  // Maps backend category to an emoji for the insight card
+  String _categoryEmoji(String category) {
+    return switch (category) {
+      'sleep'        => '🌙',
+      'nutrition'    => '🍽️',
+      'activity'     => '🏃',
+      'weight'       => '⚖️',
+      'relationship' => '📊',
+      _              => '💡',
+    };
   }
 
   void _openSleepForm() => showModalBottomSheet(
