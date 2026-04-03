@@ -12,7 +12,6 @@ import '../../services/weight_service.dart';
 import '../../services/profile_service.dart';
 import '../../widgets/onboarding_widgets.dart';
 import '../../widgets/home/home_header.dart';
-import '../../widgets/home/home_insight_card.dart';
 import '../../widgets/home/home_today.dart';
 import '../../widgets/home/home_week.dart';
 import '../../widgets/home/home_quick_add.dart';
@@ -73,28 +72,24 @@ class _HomeScreenState extends State<HomeScreen> {
       final today = DateTime(now.year, now.month, now.day);
       final week  = today.subtract(const Duration(days: 7));
 
-      // Sleep today
       SleepLog? sleepToday;
       for (final s in sleepLogs) {
         final d = DateTime(s.wakeTime.year, s.wakeTime.month, s.wakeTime.day);
         if (d == today) { sleepToday = s; break; }
       }
 
-      // Calories today
       double calToday = 0;
       for (final m in mealLogs) {
         final d = DateTime(m.createdAt.year, m.createdAt.month, m.createdAt.day);
         if (d == today) calToday += m.totalKcal;
       }
 
-      // Activity today
       int actMin = 0;
       for (final a in actLogs) {
         final d = DateTime(a.createdAt.year, a.createdAt.month, a.createdAt.day);
         if (d == today) actMin += a.durationMin ?? 0;
       }
 
-      // Weekly sleep
       final weekSleep = sleepLogs.where((s) => s.bedtime.isAfter(week)).toList();
       final uniqueSleepDays = weekSleep
           .map((s) => DateTime(s.bedtime.year, s.bedtime.month, s.bedtime.day))
@@ -103,10 +98,8 @@ class _HomeScreenState extends State<HomeScreen> {
           : weekSleep.map((s) => s.durationHours).reduce((a, b) => a + b)
           / weekSleep.length;
 
-      // Weekly activity
       final weekAct = actLogs.where((a) => a.createdAt.isAfter(week)).length;
 
-      // Weekly calories
       final Map<String, double> kcalByDay = {};
       for (final m in mealLogs) {
         if (m.createdAt.isAfter(week)) {
@@ -136,14 +129,15 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  // Insight logic
-  ({String emoji, String title, String body}) _insight() {
+  // Returns the single most important insight
+  ({String emoji, String title, String body, String severity}) _insight() {
     if (_sleepToday == null) {
       return (
       emoji: '🌙',
       title: 'Log your sleep',
       body:  'You haven\'t logged last night\'s sleep yet. '
-          'Tap "Sleep" below.',
+          'Tap "Sleep" below to add it.',
+      severity: 'warning',
       );
     }
     if (_caloriesToday == 0) {
@@ -151,13 +145,15 @@ class _HomeScreenState extends State<HomeScreen> {
       emoji: '🍽️',
       title: 'Log your first meal today',
       body:  'Start tracking what you eat to stay on top of your nutrition.',
+      severity: 'info',
       );
     }
     if (_activityMinToday == 0) {
       return (
       emoji: '🏃',
       title: 'No activity logged today',
-      body:  'Even a short walk counts. Tap "Activity" to log it.',
+      body:  'Even a short walk counts. Tap "Activity" below to log it.',
+      severity: 'info',
       );
     }
     final daysSinceWeight = _latestWeight == null
@@ -169,78 +165,67 @@ class _HomeScreenState extends State<HomeScreen> {
       title: 'Time to log your weight',
       body:  'You haven\'t logged your weight in $daysSinceWeight days. '
           'Weekly measurements give the best trend data.',
+      severity: 'info',
       );
     }
     final sleepH = _sleepToday!.durationHours.toStringAsFixed(1);
     return (
     emoji: '✅',
     title: 'All logged for today!',
-    body:  'Sleep: ${sleepH}h  ·  '
-        '${_caloriesToday.round()} kcal  ·  '
+    body:  'Sleep: ${sleepH}h  ·  ${_caloriesToday.round()} kcal  ·  '
         '${_activityMinToday} min active. Keep it up!',
+    severity: 'good',
     );
   }
 
-  // Bottom openers
   void _openSleepForm() => showModalBottomSheet(
     context: context, isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => SleepForm(
-      onSaved: (log) async {
-        await _sleepSvc.addSleepLog(log);
-        if (mounted) _load();
-      },
-    ),
+    builder: (_) => SleepForm(onSaved: (log) async {
+      await _sleepSvc.addSleepLog(log);
+      if (mounted) _load();
+    }),
   );
 
   void _openNutritionForm() => showModalBottomSheet(
     context: context, isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => NutritionForm(
-      onSaved: (log) async {
-        await _nutritionSvc.addNutritionLog(log);
-        if (mounted) _load();
-      },
-    ),
+    builder: (_) => NutritionForm(onSaved: (log) async {
+      await _nutritionSvc.addNutritionLog(log);
+      if (mounted) _load();
+    }),
   );
 
   void _openActivityForm() => showModalBottomSheet(
     context: context, isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => ActivityForm(
-      onSaved: (log) async {
-        await _activitySvc.addActivityLog(log);
-        if (mounted) _load();
-      },
-    ),
+    builder: (_) => ActivityForm(onSaved: (log) async {
+      await _activitySvc.addActivityLog(log);
+      if (mounted) _load();
+    }),
   );
 
   void _openWeightForm() => showModalBottomSheet(
     context: context, isScrollControlled: true,
     backgroundColor: Colors.transparent,
-    builder: (_) => WeightForm(
-      onSaved: (log) async {
-        await _weightSvc.addWeightLog(log);
-        if (mounted) _load();
-      },
-    ),
+    builder: (_) => WeightForm(onSaved: (log) async {
+      await _weightSvc.addWeightLog(log);
+      if (mounted) _load();
+    }),
   );
 
-  // Build
   @override
   Widget build(BuildContext context) {
     if (_loading) {
-      return const Center(
-          child: CircularProgressIndicator(color: kNeon));
+      return const Center(child: CircularProgressIndicator(color: kNeon));
     }
 
-    final firstName  = _profile?['firstName'] ?? '';
-    final targetSleep= (_profile?['target_sleep_hours'] as num?)
-        ?.toDouble() ?? 8.0;
-    final goal       = _profile?['goal'] as String? ?? 'maintain';
-    final targetKcal = goal == 'lose_weight' ? 1800.0
+    final firstName   = _profile?['firstName'] as String? ?? '';
+    final targetSleep = (_profile?['target_sleep_hours'] as num?)?.toDouble() ?? 8.0;
+    final goal        = _profile?['goal'] as String? ?? 'maintain';
+    final targetKcal  = goal == 'lose_weight' ? 1800.0
         : goal == 'gain_weight' ? 2800.0 : 2200.0;
-    final insight    = _insight();
+    final insight     = _insight();
 
     return RefreshIndicator(
       color: kNeon,
@@ -255,10 +240,12 @@ class _HomeScreenState extends State<HomeScreen> {
             HomeHeader(firstName: firstName),
             const SizedBox(height: 20),
 
-            HomeInsightCard(
-              emoji: insight.emoji,
-              title: insight.title,
-              body:  insight.body,
+            // Single main insight card
+            _MainInsightCard(
+              emoji:    insight.emoji,
+              title:    insight.title,
+              body:     insight.body,
+              severity: insight.severity,
             ),
             const SizedBox(height: 24),
 
@@ -277,13 +264,13 @@ class _HomeScreenState extends State<HomeScreen> {
             Text('This week', style: GoogleFonts.inter(
                 fontSize: 15, fontWeight: FontWeight.w700)),
             const SizedBox(height: 10),
+            // Week preview
             HomeWeekSection(
               avgSleep:    _weekAvgSleep,
               sleepDays:   _weekSleepDays,
               sessions:    _weekSessions,
               avgCalories: _weekAvgCalories,
-              onTap: () =>
-              shellTabNotifier.value = ShellTab.analytics,
+              onTap: () => shellTabNotifier.value = ShellTab.analytics,
             ),
             const SizedBox(height: 24),
 
@@ -291,10 +278,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontSize: 15, fontWeight: FontWeight.w700)),
             const SizedBox(height: 10),
             HomeQuickAddSection(
-              onAddSleep:     _openSleepForm,
-              onAddMeal:      _openNutritionForm,
-              onAddActivity:  _openActivityForm,
-              onAddWeight:    _openWeightForm,
+              onAddSleep:    _openSleepForm,
+              onAddMeal:     _openNutritionForm,
+              onAddActivity: _openActivityForm,
+              onAddWeight:   _openWeightForm,
             ),
           ],
         ),
@@ -302,3 +289,64 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
+// Severity-aware main insight card
+class _MainInsightCard extends StatelessWidget {
+  final String emoji, title, body, severity;
+  const _MainInsightCard({
+    required this.emoji,
+    required this.title,
+    required this.body,
+    required this.severity,
+  });
+
+  static const _colors = {
+    'critical': Color(0xFFEF5350),
+    'warning':  Color(0xFFFFA726),
+    'info':     Color(0xFF4FC3F7),
+    'good':     Color(0xFF39FF14),
+  };
+
+  @override
+  Widget build(BuildContext context) {
+    final dark  = Theme.of(context).brightness == Brightness.dark;
+    final color = _colors[severity] ?? const Color(0xFF4FC3F7);
+    final bg    = dark
+        ? Color.lerp(const Color(0xFF1A1A1A), color, 0.08)!
+        : color.withOpacity(0.05);
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color:        bg,
+        border:       Border.all(color: color, width: 2),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(emoji, style: const TextStyle(fontSize: 28)),
+          const SizedBox(width: 14),
+          Expanded(child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(title,
+                  style: GoogleFonts.inter(
+                      fontSize: 15, fontWeight: FontWeight.w700)),
+              const SizedBox(height: 4),
+              Text(body,
+                  style: GoogleFonts.inter(
+                      fontSize: 13,
+                      color: Colors.grey.shade500,
+                      height: 1.4)),
+            ],
+          )),
+        ],
+      ),
+    );
+  }
+}
+
+
+
