@@ -21,7 +21,7 @@ class AnalyticsInsightsSection extends StatelessWidget {
         // Insights
         _SectionHeader(
           label: 'Insights',
-          subtitle: 'Patterns found in your logged data',
+          subtitle: 'What your recent logs suggest',
         ),
         const SizedBox(height: 10),
         _RelationshipCard(
@@ -53,7 +53,7 @@ class AnalyticsInsightsSection extends StatelessWidget {
           const SizedBox(height: 24),
           _SectionHeader(
             label: 'Recommendations',
-            subtitle: 'Actions you can take based on your data',
+            subtitle: 'Simple steps to improve your results',
           ),
           const SizedBox(height: 10),
           ...recommendations.map(
@@ -401,7 +401,7 @@ class _InsufficientBanner extends StatelessWidget {
     Expanded(
       child: Text(
         // Friendly message
-        'Log more days to unlock this analysis.',
+        'Keep logging for a few more days to see this insight.',
         style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade500),
       ),
     ),

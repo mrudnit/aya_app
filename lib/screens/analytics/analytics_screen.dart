@@ -103,7 +103,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               style: GoogleFonts.inter(
                   fontSize: 26, fontWeight: FontWeight.w800, color: _kNeon)),
           const SizedBox(height: 4),
-          Text('Your weekly trends and key findings',
+          Text('Understand your recent patterns and what to do next',
               style: GoogleFonts.inter(
                   fontSize: 13, color: Colors.grey.shade500)),
           const SizedBox(height: 20),
@@ -130,7 +130,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
           const SizedBox(height: 24),
 
-          _SectionLabel('Key Findings'),
+          _SectionLabel('Insights'),
           const SizedBox(height: 10),
           AnalyticsInsightsSection(
             correlations: correlations,
