@@ -17,10 +17,7 @@ import 'package:flutter/foundation.dart'
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      throw UnsupportedError(
-        'DefaultFirebaseOptions have not been configured for web - '
-        'you can reconfigure this by running the FlutterFire CLI again.',
-      );
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -28,15 +25,9 @@ class DefaultFirebaseOptions {
       case TargetPlatform.iOS:
         return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -63,6 +54,38 @@ class DefaultFirebaseOptions {
     messagingSenderId: '690273865156',
     projectId: 'aya-application',
     storageBucket: 'aya-application.firebasestorage.app',
+    iosClientId: '690273865156-nuic8u5rmbtf88qd9ilfhlu0p72osv0s.apps.googleusercontent.com',
     iosBundleId: 'com.example.ayaMobileAppReal',
   );
+
+  static const FirebaseOptions web = FirebaseOptions(
+    apiKey: 'AIzaSyAOVNA6EXb0UcjpHkJxC1VB3KyY1YeanVU',
+    appId: '1:690273865156:web:901b40a2f9b6a45f936891',
+    messagingSenderId: '690273865156',
+    projectId: 'aya-application',
+    authDomain: 'aya-application.firebaseapp.com',
+    storageBucket: 'aya-application.firebasestorage.app',
+    measurementId: 'G-PLQQTZ539G',
+  );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyCiYSXrR5lLwXhXdkzEEUT7vMT052tAGvw',
+    appId: '1:690273865156:ios:983e26a4c9fdef04936891',
+    messagingSenderId: '690273865156',
+    projectId: 'aya-application',
+    storageBucket: 'aya-application.firebasestorage.app',
+    iosClientId: '690273865156-nuic8u5rmbtf88qd9ilfhlu0p72osv0s.apps.googleusercontent.com',
+    iosBundleId: 'com.example.ayaMobileAppReal',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyAOVNA6EXb0UcjpHkJxC1VB3KyY1YeanVU',
+    appId: '1:690273865156:web:ae7d0326c911c128936891',
+    messagingSenderId: '690273865156',
+    projectId: 'aya-application',
+    authDomain: 'aya-application.firebaseapp.com',
+    storageBucket: 'aya-application.firebasestorage.app',
+    measurementId: 'G-5Z657FJNN7',
+  );
+
 }
