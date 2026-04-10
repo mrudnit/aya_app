@@ -36,15 +36,15 @@ from app.services.recommendation_engine import generate_recommendations
 router = APIRouter()
 
 @router.get("/overview/{uid}")
-def overview(
+async def overview(
         uid: str,
 ):
     # 1. Load raw data from Firestore
-    profile       = read_profile(uid)
-    raw_sleep     = read_sleep_logs(uid)
-    raw_nutrition = read_nutrition_logs(uid)
-    raw_activity  = read_activity_logs(uid)
-    raw_weight    = read_weight_logs(uid)
+    profile       = await read_profile(uid)
+    raw_sleep     = await read_sleep_logs(uid)
+    raw_nutrition = await read_nutrition_logs(uid)
+    raw_activity  = await read_activity_logs(uid)
+    raw_weight    = await read_weight_logs(uid)
 
     # 2. Build dataframes
     sleep_df     = make_sleep_df(raw_sleep)

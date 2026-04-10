@@ -178,13 +178,13 @@ def _week_preview(
 
 # Endpoint
 @router.get("/home/{uid}")
-def home(uid: str):
+async def home(uid: str):
     # Load raw data
-    profile       = read_profile(uid)
-    raw_sleep     = read_sleep_logs(uid, limit=30)
-    raw_nutrition = read_nutrition_logs(uid, limit=30)
-    raw_activity  = read_activity_logs(uid, limit=30)
-    raw_weight    = read_weight_logs(uid, limit=30)
+    profile       = await read_profile(uid)
+    raw_sleep     = await read_sleep_logs(uid, limit=30)
+    raw_nutrition = await read_nutrition_logs(uid, limit=30)
+    raw_activity  = await read_activity_logs(uid, limit=30)
+    raw_weight    = await read_weight_logs(uid, limit=30)
 
     # Build DataFrames
     sleep_df     = make_sleep_df(raw_sleep)
