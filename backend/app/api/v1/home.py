@@ -198,6 +198,9 @@ def home(uid: str):
     target_kcal  = cal_target.get("target_kcal")
     target_sleep = float(profile.get("target_sleep_hours") or 8.0)
     user_goal    = profile.get("goal") or "maintain"
+    user_weight_kg = profile.get("weight_kg")
+    if user_weight_kg is not None:
+        user_weight_kg = float(user_weight_kg)
 
     # Analytics (recommendations)
     sleep_result     = analyse_sleep(sleep_df, target_sleep)
@@ -228,6 +231,7 @@ def home(uid: str):
         user_goal=user_goal,
         correlations=correlations,
         late_meal_analysis=late_meal_quality,
+        user_weight_kg=user_weight_kg,
     )
     # Home screen shows exactly one
     main_recommendation = all_recommendations[0] if all_recommendations else None

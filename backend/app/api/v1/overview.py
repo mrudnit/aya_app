@@ -61,6 +61,10 @@ def overview(
     target_sleep = float(profile.get("target_sleep_hours") or 8.0)
     user_goal    = profile.get("goal") or "maintain"
 
+    user_weight_kg = profile.get("weight_kg")
+    if user_weight_kg is not None:
+        user_weight_kg = float(user_weight_kg)
+
     sleep_result     = analyse_sleep(sleep_df, target_sleep)
     nutrition_result = analyse_nutrition(nutrition_df, target_kcal)
     activity_result  = analyse_activity(activity_df)
@@ -97,6 +101,7 @@ def overview(
         user_goal=user_goal,
         correlations=correlations,
         late_meal_analysis=late_meal_quality,
+        user_weight_kg=user_weight_kg,
     )
 
     # 5. Assemble response

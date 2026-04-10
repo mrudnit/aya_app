@@ -11,9 +11,7 @@ from app.core.sufficiency import (
     insufficient,
 )
 
-
 # Helper: filter to last
-
 def _last_n_days(df: pd.DataFrame, n: int = 7) -> pd.DataFrame:
     if df.empty:
         return df
@@ -26,7 +24,6 @@ def _unique_days(df: pd.DataFrame) -> int:
         return 0
     return int(df["date_only"].nunique())
 
-
 def _safe(val) -> float | None:
     if val is None:
         return None
@@ -37,9 +34,7 @@ def _safe(val) -> float | None:
         pass
     return round(float(val), 2)
 
-
 # 1. Sleep analysis
-
 def analyse_sleep(sleep_df: pd.DataFrame, target_hours: float) -> dict:
     last7  = _last_n_days(sleep_df, 7)
     last14 = _last_n_days(sleep_df, 14)
@@ -70,6 +65,23 @@ def analyse_sleep(sleep_df: pd.DataFrame, target_hours: float) -> dict:
         elif diff < -0.3:
             trend = "declining"
 
+    quality_trend = "stable"
+    quality_scores = sleep_df["quality_score"].dropna()
+    if len(quality_scores) >= 6:
+        mid        = len(quality_scores) // 2
+        first_q    = quality_scores.iloc[:mid].mean()
+        second_q   = quality_scores.iloc[mid:].mean()
+        q_diff     = second_q - first_q
+        if q_diff > 0.3:
+            quality_trend = "improving"
+        elif q_diff < -0.3:
+            quality_trend = "declining"
+
+    avg_quality = None
+    last7_quality = last7["quality_score"].dropna()
+    if not last7_quality.empty:
+        avg_quality = round(float(last7_quality.mean()), 2)
+
     # Chart data
     chart_data = []
     for _, row in last14.sort_values("bedtime").iterrows():
@@ -90,12 +102,12 @@ def analyse_sleep(sleep_df: pd.DataFrame, target_hours: float) -> dict:
         "target_hours":  target_hours,
         "vs_target":     round(avg - target_hours, 2),
         "trend":         trend,
+        "avg_quality":    avg_quality,
+        "quality_trend":  quality_trend,
         "chart_data":    chart_data,
     }
 
-
 # 2. Nutrition analysis
-
 def analyse_nutrition(
         nutrition_df: pd.DataFrame,
         target_kcal: float | None,
@@ -134,6 +146,39 @@ def analyse_nutrition(
     if target_kcal is not None:
         vs_target = round(avg_kcal - target_kcal, 1)
 
+    # Macro balance
+    macro_kcal_total = (avg_protein * 4) + (avg_carbs * 4) + (avg_fat * 9)
+    macro_balance = None
+    if macro_kcal_total > 0:
+        macro_balance = {
+            "protein_pct": round((avg_protein * 4) / macro_kcal_total * 100, 1),
+            "carbs_pct":   round((avg_carbs   * 4) / macro_kcal_total * 100, 1),
+            "fat_pct":     round((avg_fat      * 9) / macro_kcal_total * 100, 1),
+        }
+
+    # Breakfast
+    breakfast_days = 0
+    if not last7.empty and "meal_type" in last7.columns:
+        days_with_breakfast = (
+            last7[last7["meal_type"] == "breakfast"]["date_only"]
+            .nunique()
+        )
+        breakfast_days = int(days_with_breakfast)
+
+    # VS Average kcal on breakfast
+    avg_kcal_with_breakfast    = None
+    avg_kcal_without_breakfast = None
+    if not last7.empty and "meal_type" in last7.columns and n_days >= 3:
+        dates_with_breakfast = set(
+            last7[last7["meal_type"] == "breakfast"]["date_only"].unique()
+        )
+        daily_with    = daily[daily["date_only"].isin(dates_with_breakfast)]
+        daily_without = daily[~daily["date_only"].isin(dates_with_breakfast)]
+        if not daily_with.empty:
+            avg_kcal_with_breakfast    = round(float(daily_with["kcal"].mean()), 1)
+        if not daily_without.empty:
+            avg_kcal_without_breakfast = round(float(daily_without["kcal"].mean()), 1)
+
     # Chart data
     chart_data = []
     for _, row in daily.sort_values("date_only").iterrows():
@@ -155,12 +200,14 @@ def analyse_nutrition(
         "max_kcal":     round(float(daily["kcal"].max()), 1),
         "target_kcal":  target_kcal,
         "vs_target":    vs_target,
+        "macro_balance":               macro_balance,
+        "breakfast_days":              breakfast_days,
+        "avg_kcal_with_breakfast":     avg_kcal_with_breakfast,
+        "avg_kcal_without_breakfast":  avg_kcal_without_breakfast,
         "chart_data":   chart_data,
     }
 
-
 # 3. Activity analysis
-
 def analyse_activity(activity_df: pd.DataFrame) -> dict:
     last7      = _last_n_days(activity_df, 7)
     n_sessions = len(last7)
