@@ -253,7 +253,7 @@ class _StarPicker extends StatelessWidget {
       children: [
         ...List.generate(5, (i) {
           final star   = i + 1;
-          final active = star == value;
+          final active = star <= (value ?? 0);
           return GestureDetector(
             // Tap again to deselect (quality is optional).
             onTap: () => onChanged(active ? null : star),
