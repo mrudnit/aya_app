@@ -14,83 +14,83 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<ThemeMode>(
-        valueListenable: themeNotifier,
-        builder: (_, mode, __) => MaterialApp(
-          title: 'Aya',
-          debugShowCheckedModeBanner: false,
-          themeMode: mode,
+      valueListenable: themeNotifier,
+      builder: (_, mode, __) => MaterialApp(
+        title: 'Aya',
+        debugShowCheckedModeBanner: false,
+        themeMode: mode,
 
-      // Light theme
-      theme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.light,
-        scaffoldBackgroundColor: Colors.white,
-        textTheme: GoogleFonts.interTextTheme(),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF39FF14),
+        // Light theme
+        theme: ThemeData(
+          useMaterial3: true,
           brightness: Brightness.light,
+          scaffoldBackgroundColor: Colors.white,
+          textTheme: GoogleFonts.interTextTheme(),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF39FF14),
+            brightness: Brightness.light,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.white,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+          ),
         ),
-      ),
 
-      // Dark theme
-      darkTheme: ThemeData(
-        useMaterial3: true,
-        brightness: Brightness.dark,
-        scaffoldBackgroundColor: const Color(0xFF121212),
-        textTheme: GoogleFonts.interTextTheme(
-          ThemeData(brightness: Brightness.dark).textTheme,
-        ),
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF39FF14),
+        // Dark theme
+        darkTheme: ThemeData(
+          useMaterial3: true,
           brightness: Brightness.dark,
+          scaffoldBackgroundColor: const Color(0xFF121212),
+          textTheme: GoogleFonts.interTextTheme(
+            ThemeData(brightness: Brightness.dark).textTheme,
+          ),
+          colorScheme: ColorScheme.fromSeed(
+            seedColor: const Color(0xFF39FF14),
+            brightness: Brightness.dark,
+          ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFF1E1E1E),
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+          ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: Color(0xFF1E1E1E),
+          ),
         ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF1E1E1E),
-          surfaceTintColor: Colors.transparent,
+        // Outer stream
+        home: StreamBuilder<User?>(
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, authSnap) {
+            if (authSnap.connectionState == ConnectionState.waiting) {
+              return const _Loader();
+            }
+            if (!authSnap.hasData || authSnap.data == null) {
+              return const LoginScreen();
+            }
+            final uid = authSnap.data!.uid;
+            return StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
+                  .collection('users')
+                  .doc(uid)
+                  .snapshots(),
+              builder: (context, profileSnap) {
+                if (profileSnap.connectionState == ConnectionState.waiting) {
+                  return const _Loader();
+                }
+                final data =
+                profileSnap.data?.data() as Map<String, dynamic>?;
+                final onboardingDone = data?['onboarding_completed'] == true;
+                if (!onboardingDone) {
+                  return const OnboardingFlow();
+                }
+                return const MainShell();
+              },
+            );
+          },
         ),
-        bottomNavigationBarTheme: const BottomNavigationBarThemeData(
-          backgroundColor: Color(0xFF1E1E1E),
-        ),
-      ),
-      // Outer stream
-      home: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, authSnap) {
-          // Still connecting
-          if (authSnap.connectionState == ConnectionState.waiting) {
-            return const _Loader();
-          }
-
-          // Not logged in - LoginScreen
-          if (!authSnap.hasData || authSnap.data == null) {
-            return const LoginScreen();
-          }
-
-          // Logged in - check if onboarding is done
-          final uid = authSnap.data!.uid;
-          return StreamBuilder<DocumentSnapshot>(
-            stream: FirebaseFirestore.instance
-                .collection('users')
-                .doc(uid)
-                .snapshots(),
-            builder: (context, profileSnap) {
-              if (profileSnap.connectionState == ConnectionState.waiting) {
-                return const _Loader();
-              }
-
-              final data =
-              profileSnap.data?.data() as Map<String, dynamic>?;
-              final onboardingDone = data?['onboarding_completed'] == true;
-
-              if (!onboardingDone) {
-                return const OnboardingFlow();
-              }
-
-              return const MainShell();
-            },
-          );
-        },
-      ),
       ),
     );
   }
