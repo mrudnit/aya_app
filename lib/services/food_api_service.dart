@@ -27,7 +27,7 @@ class FoodApiService {
     if (query.trim().isEmpty) return [];
 
     final uri = Uri.parse('$_baseUrl/api/v1/foods/search')
-        .replace(queryParameters: {'q': query, 'limit': '20'});
+        .replace(queryParameters: {'q': query, 'limit': '30'});
 
     try {
       final response =

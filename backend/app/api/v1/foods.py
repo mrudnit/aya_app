@@ -1,5 +1,4 @@
 import csv
-import os
 from pathlib import Path
 from fastapi import APIRouter, Query
 from typing import Optional
@@ -33,25 +32,39 @@ _load_foods()
 @router.get("/foods/search")
 def search_foods(
         q: str = Query(..., min_length=1, description="Search query"),
-        limit: int = Query(20, ge=1, le=50),
+        limit: int = Query(30, ge=1, le=100),
         category: Optional[str] = Query(None),
 ):
 
     query = q.strip().lower()
-    results = []
+    words = query.split()
 
+    results = []
     for food in _FOODS:
-        if query in food["name"].lower():
-            if category and food["category"].lower() != category.lower():
-                continue
-            results.append(food)
-        if len(results) >= limit:
-            break
+        name_lower = food["name"].lower()
+
+        if not all(w in name_lower for w in words):
+            continue
+
+        if category and food["category"].lower() != category.lower():
+            continue
+
+        results.append(food)
+
+    def sort_key(f):
+        n = f["name"].lower()
+        if n.startswith(query):
+            return (0, n)
+        if query in n.split(",")[0]:
+            return (1, n)
+        return (2, n)
+
+    results.sort(key=sort_key)
 
     return {
         "query":   q,
         "count":   len(results),
-        "results": results,
+        "results": results[:limit],
     }
 
 @router.get("/foods/categories")
