@@ -46,20 +46,17 @@ class _NutritionFormState extends State<NutritionForm> {
   void _onSearch() async {
     final q = _searchCtrl.text.trim();
     if (q.isEmpty) {
-      setState(() { _results = []; _picked = null; });
+      if (mounted) setState(() { _results = []; _picked = null; });
       return;
     }
     if (_picked != null && _searchCtrl.text == _picked!.name) return;
 
     final apiResults = await FoodApiService.searchFoods(q);
-    if (apiResults.isNotEmpty) {
-      setState(() {
-        _picked  = null;
-        _results = apiResults;
-      });
-      return;
-    }
-
+    if (!mounted) return;
+    setState(() {
+      _picked  = null;
+      _results = apiResults;
+    });
   }
 
   void _pickFood(FoodItem food) {

@@ -12,8 +12,13 @@ def _load_foods():
     global _FOODS
     if _FOODS:
         return
-    csv_path = Path(__file__).parent.parent.parent / "data" / "food_database.csv"
-    if not csv_path.exists():
+    here = Path(__file__).resolve()
+    for parent in here.parents:
+        candidate = parent / "data" / "food_database.csv"
+        if candidate.exists():
+            csv_path = candidate
+            break
+    else:
         return
     with open(csv_path, newline='', encoding='utf-8') as f:
         reader = csv.DictReader(f)
