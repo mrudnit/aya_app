@@ -15,7 +15,6 @@ from app.services.preprocessor import preprocess_all
 
 router = APIRouter()
 
-
 @router.get("/debug/{uid}")
 def debug_user_data(
         uid: str,

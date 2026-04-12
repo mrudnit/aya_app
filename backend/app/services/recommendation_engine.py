@@ -625,7 +625,6 @@ def _apply_suppression(recs: list[dict]) -> list[dict]:
 
     return [r for r in recs if r["id"] not in suppressed_ids]
 
-
 def _deduplicate_by_category(recs: list[dict]) -> list[dict]:
     seen_categories = {}
     final = []
@@ -646,7 +645,6 @@ def _deduplicate_by_category(recs: list[dict]) -> list[dict]:
     return final
 
 # Main entry point
-
 def generate_recommendations(
         sleep: dict,
         nutrition: dict,

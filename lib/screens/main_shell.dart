@@ -49,6 +49,8 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        elevation: 0,
+        scrolledUnderElevation: 0,
         title: Text('Aya',
             style: GoogleFonts.inter(
                 fontWeight: FontWeight.w800,

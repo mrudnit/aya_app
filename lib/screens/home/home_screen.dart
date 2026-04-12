@@ -140,24 +140,12 @@ class _HomeScreenState extends State<HomeScreen> {
       if (mounted) setState(() => _loading = false);
     }
   }
-
-  // ── Insight card logic ─────────────────────────────────────────────────────
-  // Priority order:
-  //   1. Backend main_recommendation — real statistical insight
-  //   2. Local logging reminders — "you haven't logged X today"
-  //   3. Positive fallback — "You're on track"
   ({String emoji, String title, String body, String severity}) _insight() {
-
-    // 1. Backend recommendation takes priority when available
-    //    Skip "good" severity from backend — those are positive and
-    //    can be replaced with the local fallback which reads better
     if (_mainRec != null) {
       final sev     = _mainRec!['severity']  as String? ?? 'info';
       final title   = _mainRec!['title']     as String? ?? '';
       final summary = _mainRec!['summary']   as String? ?? '';
       final cat     = _mainRec!['category']  as String? ?? '';
-
-      // Only show backend rec if it's actionable (not just "all good")
       if (sev != 'good' && title.isNotEmpty) {
         return (
         emoji:    _categoryEmoji(cat),
@@ -167,8 +155,6 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     }
-
-    // 2. Local logging reminders — show the most important missing log
     if (_sleepToday == null) {
       return (
       emoji:    '🌙',
@@ -206,9 +192,6 @@ class _HomeScreenState extends State<HomeScreen> {
       severity: 'info',
       );
     }
-
-    // 3. Everything logged + backend either said "good" or was unreachable
-    //    Show backend good message if available, else standard fallback
     if (_mainRec != null) {
       final title   = _mainRec!['title']   as String? ?? '';
       final summary = _mainRec!['summary'] as String? ?? '';
@@ -230,8 +213,6 @@ class _HomeScreenState extends State<HomeScreen> {
     severity: 'good',
     );
   }
-
-  // Maps backend category to an emoji for the insight card
   String _categoryEmoji(String category) {
     return switch (category) {
       'sleep'        => '🌙',
@@ -355,7 +336,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-// Severity-aware main insight card
 class _MainInsightCard extends StatelessWidget {
   final String emoji, title, body, severity;
   const _MainInsightCard({

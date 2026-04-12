@@ -253,9 +253,7 @@ def analyse_activity(activity_df: pd.DataFrame) -> dict:
         "chart_data":      chart_data,
     }
 
-
 # 4. Weight analysis
-
 def analyse_weight(weight_df: pd.DataFrame, user_goal: str) -> dict:
     df = weight_df.dropna(subset=["weight_kg"]).copy()
     n  = len(df)

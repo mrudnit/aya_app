@@ -40,8 +40,8 @@ class MealItem {
 // One complete meal
 class MealLog {
   final String?        id;
-  final String         mealType;  // breakfast / lunch / dinner / snack
-  final String         date;      // "YYYY-MM-DD" — display label
+  final String         mealType;
+  final String         date;
   final List<MealItem> items;
   final String?        notes;
   final DateTime       createdAt;

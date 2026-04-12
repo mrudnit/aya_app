@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/weight_log.dart';
-import '../../../widgets/onboarding_widgets.dart'; // kNeon
+import '../../../widgets/onboarding_widgets.dart';
 
 class WeightHistoryList extends StatelessWidget {
   final List<WeightLog>       logs;

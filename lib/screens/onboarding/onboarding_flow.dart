@@ -145,7 +145,6 @@ class _OnboardingFlowState extends State<OnboardingFlow> {
   }
 }
 
-
 // ProgressBar
 class _ProgressBar extends StatelessWidget {
   final int step;
@@ -174,9 +173,7 @@ class _ProgressBar extends StatelessWidget {
   }
 }
 
-
 // BottomBar
-
 class _BottomBar extends StatelessWidget {
   final int step;
   final bool saving;

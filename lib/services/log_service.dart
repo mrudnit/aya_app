@@ -25,7 +25,6 @@ class LogService {
       _db.collection('users').doc(_uid);
 
   // NUTRITION
-
   Future<void> addNutritionLog(NutritionLog log) =>
       _nutrition.addNutritionLog(log);
 
@@ -39,7 +38,6 @@ class LogService {
       _nutrition.deleteNutritionLog(id);
 
   // ACTIVITY
-
   Future<void> addActivityLog(ActivityLog log) =>
       _activity.addActivityLog(log);
 
@@ -51,7 +49,6 @@ class LogService {
 
 
   // SLEEP
-
   Future<void> addSleepLog(SleepLog log) =>
       _sleep.addSleepLog(log);
 
@@ -62,7 +59,6 @@ class LogService {
       _sleep.deleteSleepLog(logId);
 
   // WEIGHT
-
   Future<void> addWeightLog(WeightLog log) =>
       _weight.addWeightLog(log);
 

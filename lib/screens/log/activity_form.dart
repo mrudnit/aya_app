@@ -70,7 +70,6 @@ class _ActivityFormState extends State<ActivityForm> {
         '${n.day.toString().padLeft(2, '0')}';
   }
 
-
   // Add exercise to the session list
   void _addExercise() {
     final name = _showCustom
@@ -463,9 +462,7 @@ class _ExerciseTile extends StatelessWidget {
   }
 }
 
-//  Small local widgets ─
-
-// Section label inside the form
+//  Small local widgets
 class _Label extends StatelessWidget {
   final String text;
   const _Label(this.text);

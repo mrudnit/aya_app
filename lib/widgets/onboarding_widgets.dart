@@ -4,7 +4,6 @@ import 'package:google_fonts/google_fonts.dart';
 // The neon green colour used everywhere in onboarding.
 const kNeon = Color(0xFF39FF14);
 
-
 //  StepTitle
 class StepTitle extends StatelessWidget {
   final String step;
@@ -163,7 +162,6 @@ class OptionCard extends StatelessWidget {
     );
   }
 }
-
 
 // SummaryRow
 class SummaryRow extends StatelessWidget {

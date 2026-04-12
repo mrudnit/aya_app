@@ -12,9 +12,8 @@ class OnboardingStep3 extends StatelessWidget {
   final String activity;
   final String sleepHours;
 
-  final bool saving;       // true while Firestore write is in progress
-  final String? error;     // non-null if the save failed
-
+  final bool saving;
+  final String? error;
   // Called "Save & continue"
   final VoidCallback onSave;
 

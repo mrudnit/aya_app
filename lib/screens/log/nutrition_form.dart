@@ -1,21 +1,11 @@
-// screens/log/nutrition_form.dart
-//
-// How it works:
-//   1. Pick meal type
-//   2. Search a food → tap it → grams field appears pre-filled to 100
-//      → change grams if needed → tap Add
-//   3. Added item collapses to a compact row (name · grams · kcal)
-//      Tap the row to expand and see macros or remove it
-//   4. Tap "+ Add another food" to add more items
-//   5. Tap "Save meal" → one Firestore document with all items
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../models/nutrition_log.dart';
+import '../../../services/food_api_service.dart';
 import '../../../widgets/neon_widgets.dart';
-import '../../../widgets/onboarding_widgets.dart'; // kNeon
+import '../../../widgets/onboarding_widgets.dart';
 import 'nutrition_constants.dart';
 
 class NutritionForm extends StatefulWidget {
@@ -27,15 +17,10 @@ class NutritionForm extends StatefulWidget {
 }
 
 class _NutritionFormState extends State<NutritionForm> {
-  // ── Meal ────────────────────────────────────────────────────
+  // Meal
   String               _mealType = 'lunch';
   final List<MealItem> _items    = [];
   bool                 _saving   = false;
-
-  // ── Current search session ───────────────────────────────────
-  // _showSearch controls whether the search+grams area is visible.
-  // It starts true (so first food is immediately visible),
-  // and goes back to true when user taps "+ Add another food".
   bool             _showSearch = true;
   FoodItem?        _picked;
   List<FoodItem>   _results = [];
@@ -43,13 +28,11 @@ class _NutritionFormState extends State<NutritionForm> {
   final _searchCtrl  = TextEditingController();
   final _portionCtrl = TextEditingController();
 
-  // Which item row is expanded in the list
   int _expanded = -1;
 
   @override
   void initState() {
     super.initState();
-    // Listen for search text changes — only registered once here
     _searchCtrl.addListener(_onSearch);
   }
 
@@ -60,14 +43,13 @@ class _NutritionFormState extends State<NutritionForm> {
     super.dispose();
   }
 
-  // ── Search logic ─────────────────────────────────────────────
+  // Search logic
   void _onSearch() {
     final q = _searchCtrl.text.trim().toLowerCase();
     if (q.isEmpty) {
       setState(() { _results = []; _picked = null; });
       return;
     }
-    // Only show results if user is still typing (not after picking)
     if (_picked != null && _searchCtrl.text == _picked!.name) return;
     setState(() {
       _picked  = null;
@@ -79,8 +61,6 @@ class _NutritionFormState extends State<NutritionForm> {
   }
 
   void _pickFood(FoodItem food) {
-    // Picking a food fills the search field and shows the grams input.
-    // No macro fields — macros are calculated silently on Add.
     setState(() {
       _picked  = food;
       _results = [];
@@ -89,7 +69,7 @@ class _NutritionFormState extends State<NutritionForm> {
     _portionCtrl.text = '100';
   }
 
-  // ── Add item to the meal list ────────────────────────────────
+  // Add item to the meal list
   void _addItem() {
     if (_picked == null) {
       _snack('Select a food from the list first.');
@@ -110,7 +90,6 @@ class _NutritionFormState extends State<NutritionForm> {
         carbsG:   _round(_picked!.carbsG   * r),
         fatG:     _round(_picked!.fatG     * r),
       ));
-      // Reset search area and hide it — user sees the item list
       _picked     = null;
       _showSearch = false;
       _results    = [];
@@ -127,7 +106,7 @@ class _NutritionFormState extends State<NutritionForm> {
     _expanded = -1;
   });
 
-  // ── Save ─────────────────────────────────────────────────────
+  // Save
   Future<void> _save() async {
     if (_items.isEmpty) {
       _snack('Add at least one food.');
@@ -157,7 +136,7 @@ class _NutritionFormState extends State<NutritionForm> {
   void _snack(String m) => ScaffoldMessenger.of(context)
       .showSnackBar(SnackBar(content: Text(m)));
 
-  // ── Build ─────────────────────────────────────────────────────
+  // Build
   @override
   Widget build(BuildContext context) {
     final dark   = Theme.of(context).brightness == Brightness.dark;
@@ -177,7 +156,6 @@ class _NutritionFormState extends State<NutritionForm> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
 
-            // Handle
             Center(child: Container(
               width: 40, height: 4,
               decoration: BoxDecoration(
@@ -196,14 +174,14 @@ class _NutritionFormState extends State<NutritionForm> {
                     fontSize: 12, color: Colors.grey.shade500)),
             const SizedBox(height: 18),
 
-            // ── Meal type ──────────────────────────────────
+            // Meal type
             _MealTypePicker(
               selected:  _mealType,
               onChanged: (v) => setState(() => _mealType = v),
             ),
             const SizedBox(height: 20),
 
-            // ── Already-added items ────────────────────────
+            // Already-added items
             if (_items.isNotEmpty) ...[
               Text('Items',
                   style: GoogleFonts.inter(
@@ -221,7 +199,7 @@ class _NutritionFormState extends State<NutritionForm> {
               const SizedBox(height: 12),
             ],
 
-            // ── Search + grams area ────────────────────────
+            // Search
             if (_showSearch) ...[
               Text(_items.isEmpty ? 'Search food' : 'Add another food',
                   style: GoogleFonts.inter(
@@ -242,7 +220,6 @@ class _NutritionFormState extends State<NutritionForm> {
                   dark:       dark,
                 ),
 
-              // Once a food is picked: show grams + Add button
               if (_picked != null) ...[
                 const SizedBox(height: 10),
                 Row(children: [
@@ -258,7 +235,7 @@ class _NutritionFormState extends State<NutritionForm> {
                 ]),
                 const SizedBox(height: 10),
                 Row(children: [
-                  // Grams field — user can change from default 100
+                  // Grams field
                   Expanded(
                     child: TextFormField(
                       controller: _portionCtrl,
@@ -315,8 +292,7 @@ class _NutritionFormState extends State<NutritionForm> {
               ],
             ],
 
-            // ── "+ Add another food" button ────────────────
-            // Shown after an item is added and search is hidden
+            // Add another food
             if (!_showSearch && _items.isNotEmpty) ...[
               const SizedBox(height: 4),
               TextButton.icon(
@@ -346,8 +322,7 @@ class _NutritionFormState extends State<NutritionForm> {
   }
 }
 
-
-// ── Meal type picker ───────────────────────────────────────────
+// Meal type picker
 class _MealTypePicker extends StatelessWidget {
   final String                selected;
   final void Function(String) onChanged;
@@ -409,10 +384,7 @@ class _MealTypePicker extends StatelessWidget {
   }
 }
 
-
-// ── Confirmed item tile ────────────────────────────────────────
-// Collapsed: food name + grams + kcal + arrow
-// Expanded:  + P/C/F chips + Remove button
+// Confirmed item tile
 class _ItemTile extends StatelessWidget {
   final MealItem     item;
   final bool         expanded;
@@ -521,8 +493,7 @@ class _Chip extends StatelessWidget {
   );
 }
 
-
-// ── Running total ──────────────────────────────────────────────
+// Running total
 class _TotalRow extends StatelessWidget {
   final List<MealItem> items;
   const _TotalRow({required this.items});
@@ -571,8 +542,7 @@ class _Total extends StatelessWidget {
   ]);
 }
 
-
-// ── Search results dropdown ────────────────────────────────────
+// Search results dropdown
 class _ResultsList extends StatelessWidget {
   final List<FoodItem>          results;
   final void Function(FoodItem) onSelected;
