@@ -6,7 +6,6 @@ import '../../../models/nutrition_log.dart';
 import '../../../services/food_api_service.dart';
 import '../../../widgets/neon_widgets.dart';
 import '../../../widgets/onboarding_widgets.dart';
-import 'nutrition_constants.dart';
 
 class NutritionForm extends StatefulWidget {
   final Future<void> Function(MealLog) onSaved;
@@ -44,20 +43,23 @@ class _NutritionFormState extends State<NutritionForm> {
   }
 
   // Search logic
-  void _onSearch() {
-    final q = _searchCtrl.text.trim().toLowerCase();
+  void _onSearch() async {
+    final q = _searchCtrl.text.trim();
     if (q.isEmpty) {
       setState(() { _results = []; _picked = null; });
       return;
     }
     if (_picked != null && _searchCtrl.text == _picked!.name) return;
-    setState(() {
-      _picked  = null;
-      _results = kFoodCatalog
-          .where((f) => f.name.toLowerCase().contains(q))
-          .take(6)
-          .toList();
-    });
+
+    final apiResults = await FoodApiService.searchFoods(q);
+    if (apiResults.isNotEmpty) {
+      setState(() {
+        _picked  = null;
+        _results = apiResults;
+      });
+      return;
+    }
+
   }
 
   void _pickFood(FoodItem food) {
