@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.firebase import init_firebase
-from app.api.v1 import debug, overview, home
+from app.api.v1 import debug, overview, home, foods
 
 # Initialise Firebase once
 init_firebase()
@@ -38,6 +38,12 @@ app.include_router(
     overview.router,
     prefix="/api/v1/analytics",
     tags=["Analytics"],
+)
+
+app.include_router(
+    foods.router,
+    prefix="/api/v1",
+    tags=["Foods"],
 )
 
 @app.get("/")
