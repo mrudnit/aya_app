@@ -22,6 +22,20 @@ MIN_TTEST_PER_GROUP = 3
 def _paired(daily_df: pd.DataFrame, col_a: str, col_b: str) -> pd.DataFrame:
     return daily_df[[col_a, col_b]].dropna().copy()
 
+
+import math
+
+def _sanitize(obj):
+    if isinstance(obj, dict):
+        return {k: _sanitize(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [_sanitize(v) for v in obj]
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+    return obj
+
+
 def _safe_round(val, n: int = 3) -> float | None:
     try:
         if val is None or np.isnan(float(val)):
@@ -31,8 +45,23 @@ def _safe_round(val, n: int = 3) -> float | None:
         return None
 
 def _pearson(x: pd.Series, y: pd.Series) -> dict:
+    if x.nunique() < 2 or y.nunique() < 2:
+        return {
+            "method": "pearson", "r": None, "p_value": None,
+            "n": len(x), "significant": False, "strength": "none",
+            "direction": "none",
+            "interpretation": "Correlation not computable (insufficient variation in data).",
+        }
     r, p = stats.pearsonr(x, y)
-    r, p = float(r), float(p)
+    r = float(r) if not (np.isnan(float(r)) or np.isinf(float(r))) else None
+    p = float(p) if not (np.isnan(float(p)) or np.isinf(float(p))) else None
+    if r is None or p is None:
+        return {
+            "method": "pearson", "r": None, "p_value": None,
+            "n": len(x), "significant": False, "strength": "none",
+            "direction": "none",
+            "interpretation": "Correlation not computable (constant input).",
+        }
 
     strength  = "strong" if abs(r) >= 0.5 else "moderate" if abs(r) >= 0.3 else "weak"
     direction = "positive" if r > 0 else "negative"
@@ -327,22 +356,26 @@ def analyse_late_meal_vs_sleep_quality(daily_df: pd.DataFrame) -> dict:
     if n >= MIN_PAIRED_CORRELATION:
         x = paired["has_late_meal"].astype(int)
         y = paired["quality_score"]
-        r, p = stats.pearsonr(x, y)
-        r, p = float(r), float(p)
-        correlation = {
-            "method":         "point_biserial",
-            "r":              round(r, 4),
-            "p_value":        round(p, 4),
-            "n":              n,
-            "significant":    bool(p < 0.05),
-            "direction":      "negative" if r < 0 else "positive",
-            "interpretation": (
-                f"{'Significant' if p < 0.05 else 'No significant'} "
-                f"{'negative' if r < 0 else 'positive'} association between "
-                f"late meals and sleep quality "
-                f"(r = {round(r, 3)}, p = {round(p, 4)}, n = {n})."
-            ),
-        }
+        correlation = None
+        if x.nunique() >= 2 and y.nunique() >= 2:
+            r_raw, p_raw = stats.pearsonr(x, y)
+            r = float(r_raw) if not (np.isnan(float(r_raw)) or np.isinf(float(r_raw))) else None
+            p = float(p_raw) if not (np.isnan(float(p_raw)) or np.isinf(float(p_raw))) else None
+            if r is not None and p is not None:
+                correlation = {
+                    "method":         "point_biserial",
+                    "r":              round(r, 4),
+                    "p_value":        round(p, 4),
+                    "n":              n,
+                    "significant":    bool(p < 0.05),
+                    "direction":      "negative" if r < 0 else "positive",
+                    "interpretation": (
+                        f"{'Significant' if p < 0.05 else 'No significant'} "
+                        f"{'negative' if r < 0 else 'positive'} association between "
+                        f"late meals and sleep quality "
+                        f"(r = {round(r, 3)}, p = {round(p, 4)}, n = {n})."
+                    ),
+                }
 
     # Welch t-test
     t_test = None

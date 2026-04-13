@@ -24,7 +24,7 @@ from app.services.analytics_service import (
     analyse_weight,
 )
 
-from app.services.relationship_service import (
+from app.services.relationship_service import _sanitize, (
     analyse_sleep_vs_activity,
     analyse_sleep_vs_calories,
     analyse_activity_vs_weight,
@@ -104,8 +104,7 @@ async def overview(
         user_weight_kg=user_weight_kg,
     )
 
-    # 5. Assemble response
-    return {
+    response = {
         "generated_at":    datetime.utcnow().isoformat() + "Z",
         "uid":             uid,
         "profile": {
@@ -122,3 +121,4 @@ async def overview(
         "late_meal_analysis": late_meal_quality,
         "recommendations":    recommendations,
     }
+    return _sanitize(response)
