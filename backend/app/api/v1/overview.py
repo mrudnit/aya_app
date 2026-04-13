@@ -24,7 +24,8 @@ from app.services.analytics_service import (
     analyse_weight,
 )
 
-from app.services.relationship_service import _sanitize, (
+from app.services.relationship_service import (
+    _sanitize,
     analyse_sleep_vs_activity,
     analyse_sleep_vs_calories,
     analyse_activity_vs_weight,
