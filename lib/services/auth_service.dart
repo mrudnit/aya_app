@@ -41,7 +41,7 @@ class AuthService {
   // Login with Google
   Future<void> signInWithGoogle() async {
     final googleUser = await _google.signIn();
-    if (googleUser == null) return;
+    if (googleUser == null) return; // user cancelled
 
     final googleAuth = await googleUser.authentication;
 
@@ -50,7 +50,23 @@ class AuthService {
       idToken: googleAuth.idToken,
     );
 
-    await _auth.signInWithCredential(credential);
+    final userCred = await _auth.signInWithCredential(credential);
+    if (userCred.additionalUserInfo?.isNewUser == true) {
+      final uid = userCred.user!.uid;
+      final displayName = googleUser.displayName ?? '';
+      final parts = displayName.split(' ');
+      final firstName = parts.isNotEmpty ? parts.first : '';
+      final lastName = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+
+      await _db.collection('users').doc(uid).set({
+        'uid': uid,
+        'email': googleUser.email,
+        'firstName': firstName,
+        'lastName': lastName,
+        'phone': '',
+        'createdAt': FieldValue.serverTimestamp(),
+      });
+    }
   }
 
   // Logout

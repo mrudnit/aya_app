@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../services/auth_service.dart';
@@ -148,9 +149,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _phoneCtrl,
                   label: 'Phone',
                   keyboardType: TextInputType.phone,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   validator: (v) {
                     if (v == null || v.trim().isEmpty) return 'Phone is required';
-                    if (v.trim().length < 7) return 'Enter a valid number';
+                    if (v.trim().length < 7) return 'Enter a valid phone number';
+                    if (v.trim().length > 15) return 'Phone number is too long';
                     return null;
                   },
                 ),
