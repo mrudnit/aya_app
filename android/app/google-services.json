@@ -50,6 +50,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "690273865156-a8f91pntbemaaetpbevuvq1h2saakfmf.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.aya_mobile_app_real",
+            "certificate_hash": "0a2bb2b9472a07732cb0fc47d3d927d8ce577bfa"
+          }
+        },
+        {
           "client_id": "690273865156-6c6oi3lensc5nac55sfjgoj98knq85m6.apps.googleusercontent.com",
           "client_type": 3
         }
