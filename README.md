@@ -52,21 +52,18 @@ Vopred nastavený demo účet na otestovanie všetkých funkcií.
 - E-mail: `demo@aya-app.com`
 - Heslo: `UKF12345`
 
-- **Čo tento účet ukazuje:**
+**Čo tento účet ukazuje:**
 - 45 dní realistických údajov o životnom štýle (15 dní v minulosti + 30 dní v budúcnosti)
-- Cieľ: schudnúť (muž, 24 rokov, 180 cm, 80 kg)
+- Cieľ: udržať hmotnosť (muž, 23 rokov, 176 cm, 84 kg)
 - Úroveň aktivity: Stredná
 - Cieľový spánok: 8 hodín/noc
-- Spánok: 7–8 hodín za noc, kvalita 3–5
-- Výživa: 1950–2450 kcal/deň v 3 jedlách (raňajky, obed, večera)
-- Aktivita: silový a kardio tréning každé 2 dni
-- Hmotnosť: pomaly klesajúci trend v súlade s cieľom
+- Večera po 20:00 v 55% dní - jasný vzor neskorého jedenia
+- Kvalita spánku výrazne horšia v noci po neskorej večeri
 
-- **Čo ukazuje analytika:**
-- Spánok vs. aktivita: zistená pozitívna korelácia
-- Príjem kalórií v cieľovom rozsahu
-- Trend hmotnosti v súlade s cieľom
-- Odporúčanie: používateľ je na správnej ceste
+**Čo ukazuje analytika:**
+- Večerné jedlá výrazne zhoršujú kvalitu spánku (2.2/5 vs 3.8/5)
+- Odporúčanie: prestať jesť po 20:00
+- Hmotnosť stabilná v súlade s cieľom udržania
 
 **Ako získať prístup:**
 1. Otvorte webovú verziu:(https://shiny-marigold-6863cc.netlify.app)
