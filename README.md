@@ -1,4 +1,4 @@
-# Aya — Aplikácia pre analýzu stravovania a životného štýlu
+# Aya - Aplikácia pre analýzu stravovania a životného štýlu
 
 Mobilná aplikácia vyvinutá v rámci bakalárskej práce na UKF v Nitre.  
 Umožňuje zaznamenávať spánok, stravu, fyzickú aktivitu a hmotnosť  
