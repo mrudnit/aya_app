@@ -18,7 +18,7 @@ a na základe štatistickej analýzy poskytuje personalizované odporúčania.
 - Výpočet kalorického cieľa (rovnica Mifflin-St Jeor)
 - Štatistická analýza: Pearsonova korelácia, Spearmanova korelácia,
   point-biseriálna korelácia, Welchov t-test
-- Systém prahu dôvery — analýza sa zobrazí až po dostatočnom množstve dát
+- Systém prahu dôvery - analýza sa zobrazí až po dostatočnom množstve dát
 - Personalizované odporúčania zoradené podľa priority
 - Podpora svetlého a tmavého režimu
 
